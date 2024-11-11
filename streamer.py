@@ -1,6 +1,6 @@
 import cv2
 
-cap = cv2.VideoCapture(0)  # Force the V4L2 backend
+cap = cv2.VideoCapture(1)  # Force the V4L2 backend
 
 if not cap.isOpened():
     print("Error: Camera not accessible.")
