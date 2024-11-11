@@ -1,5 +1,4 @@
 import cv2
-import libcamera
 from picamera2 import Picamera2, Preview
 
 
