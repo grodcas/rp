@@ -1,15 +1,11 @@
 import cv2
-from picamera2 import Picamera2, Preview
+from picamzero import Camera
+from time import sleep
+
+cam = Camera()
 
 
-picam= Picamera2()
-
-config = picam.create_preview_configuration()
-picam.configure(config)
-picam.start()
-
-
-cap = cv2.VideoCapture(1)  # Force the V4L2 backend
+cap = cv2.VideoCapture(0)  # Force the V4L2 backend
 
 if not cap.isOpened():
     print("Error: Camera not accessible.")
