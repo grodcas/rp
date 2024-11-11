@@ -1,9 +1,4 @@
 import cv2
-from picamzero import Camera
-from time import sleep
-
-cam = Camera()
-cam.start()
 
 cap = cv2.VideoCapture(0)  # Force the V4L2 backend
 
