@@ -7,7 +7,7 @@
 import smbus
 import time
 # Get I2C bus
-bus = smbus.SMBus(1)
+bus = smbus.SMBus(10)
 
 # MPU-6000 address, 0x68(104)
 # Select gyroscope configuration register, 0x1B(27)
