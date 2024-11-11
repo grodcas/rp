@@ -1,6 +1,7 @@
 from flask import Flask, Response
 from picamera2 import Picamera2
 import time
+import cv2
 
 app = Flask(__name__)
 
