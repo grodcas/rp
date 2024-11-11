@@ -1,14 +1,9 @@
 import cv2
-from picamera2 import Picamera2, Preview
+from picamzero import Camera
+from time import sleep
 
-
-picam= Picamera2()
-
-config = picam.create_preview_configuration()
-picam.configure(config)
-picam.start()
-
-
+cam = Camera()
+cam.start()
 
 cap = cv2.VideoCapture(0)  # Force the V4L2 backend
 
