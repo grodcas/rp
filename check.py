@@ -20,19 +20,10 @@ except Exception as e:
 # Initialize the Flask app
 app = Flask(__name__)
 
-# Initialize the camera (0 is the default camera)
-cap = cv2.VideoCapture(0)
-
-# Check if the camera is opened successfully
-if not cap.isOpened():
-    print("Error: Camera is not accessible.")
-else:
-    print("Camera is successfully opened.")
-
 def generate_frames():
     while True:
         # Capture frame-by-frame
-        ret, frame = cap.read()
+        frame = picam2.capture_array()
 
         if not ret:
             print("Error: Failed to grab frame.")
