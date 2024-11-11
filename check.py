@@ -1,5 +1,21 @@
 import cv2
 from flask import Flask, Response
+from picamera2 import Picamera2
+import numpy as np
+import time
+
+# Initialize the Picamera2 object
+picam2 = Picamera2()
+
+# Check if the camera is accessible
+try:
+    # Configure the camera for video capture
+    picam2.configure(picam2.create_video_configuration())
+    picam2.start()
+    print("Camera initialized successfully.")
+except Exception as e:
+    print(f"Error initializing camera: {e}")
+    exit(1)
 
 # Initialize the Flask app
 app = Flask(__name__)
