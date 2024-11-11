@@ -1,45 +1,44 @@
+from flask import Flask, Response
 from picamera2 import Picamera2
+import time
 import cv2
 import numpy as np
-import time
 
-# Initialize the Picamera2 object
+app = Flask(__name__)
+
+# Initialize picamera2
 picam2 = Picamera2()
 
-# Check if the camera is accessible
-try:
-    # Configure the camera for video capture
-    picam2.configure(picam2.create_video_configuration())
-    picam2.start()
-    print("Camera initialized successfully.")
-except Exception as e:
-    print(f"Error initializing camera: {e}")
-    exit(1)
+# Configure the camera for video capture (set a higher resolution)
+picam2.configure(picam2.create_video_configuration(
+    main={"size": (1920, 1080), "format": "YUV420"}))  # Set resolution and format
+picam2.start()
 
-# OpenCV window to display the video feed
-cv2.namedWindow("Video Feed", cv2.WINDOW_NORMAL)
-
-# Capture and display video frames
-while True:
-    try:
+def generate():
+    while True:
         # Capture a frame from picamera2
         frame = picam2.capture_array()
-
-        if frame is None:
-            print("Failed to grab frame.")
-            continue  # Skip if no frame is captured
         
-        # Display the frame
-        cv2.imshow("Video Feed", frame)
+        if frame is not None:
+            # Convert from YUV (or BGR if OpenCV) to RGB to fix color issues
+            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_YUV2RGB_YV12)  # Convert YUV to RGB
 
-        # Exit on pressing 'q'
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+            # Compress the frame into JPEG format
+            ret, jpeg = cv2.imencode('.jpg', frame_rgb, [cv2.IMWRITE_JPEG_QUALITY, 90])  # Set JPEG quality to 90
+            if ret:
+                # Yield the frame in MJPEG format for streaming
+                yield (b'--frame\r\n'
+                       b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n\r\n')
+        time.sleep(0.1)  # Adjust the frame rate if needed
 
-    except Exception as e:
-        print(f"Error during frame capture: {e}")
-        break
+@app.route('/')
+def index():
+    return "MJPEG Streaming is running!"
 
-# Release the camera and close the window
-picam2.stop()
-cv2.destroyAllWindows()
+@app.route('/video_feed')
+def video_feed():
+    return Response(generate(),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, threaded=True)
