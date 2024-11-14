@@ -11,6 +11,7 @@ app = Flask(__name__)
 # Set up I2C communication
 bus = smbus.SMBus(1)  # I2C bus 1 (default for most Raspberry Pi models)
 MPU6050_ADDR = 0x68  # MPU-6050 I2C address
+GYRO_SCALE_MODIFIER = 131.0 
 
 # Initialize the MPU-6050
 def init_mpu():
@@ -31,7 +32,11 @@ def read_mpu():
     gx = (gyro_data[0] << 8) + gyro_data[1]
     gy = (gyro_data[2] << 8) + gyro_data[3]
     gz = (gyro_data[4] << 8) + gyro_data[5]
-
+    
+    gx /= GYRO_SCALE_MODIFIER
+    gy /= GYRO_SCALE_MODIFIER
+    gz /= GYRO_SCALE_MODIFIER
+    
     return ax, ay, az, gx, gy, gz
 
 # Initialize MPU
