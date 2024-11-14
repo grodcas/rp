@@ -10,7 +10,7 @@ picam2 = Picamera2()
 
 # Configure the camera for video capture
 picam2.configure(picam2.create_video_configuration())
-picam2.set_controls({"AwbMode": "auto"})  # This enables automatic white balance
+#picam2.set_controls({"AwbMode": "auto"})  # This enables automatic white balance
 
 # Adjust the focus if the camera supports it
 # This will only work if your camera has adjustable focus.
