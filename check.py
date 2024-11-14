@@ -1,22 +1,27 @@
 from flask import Flask, Response
-from picamera2 import Picamera2
+from picamera2 import Picamera2, Preview
 import time
 import cv2
 
 app = Flask(__name__)
 
-# Initialize picamera2
+# Initialize Picamera2
 picam2 = Picamera2()
 
 # Configure the camera for video capture
 picam2.configure(picam2.create_video_configuration())
+
+# Adjust the focus if the camera supports it
+# This will only work if your camera has adjustable focus.
+picam2.set_controls({"Focus": 0.5})  # Example: Adjust focus (value between 0 and 1, adjust as necessary)
+
 picam2.start()
 
 def generate():
     while True:
-        # Capture a frame from picamera2
+        # Capture a frame from Picamera2
         frame = picam2.capture_array()
-        
+
         if frame is not None:
             # Convert the frame to JPEG format for MJPEG streaming
             ret, jpeg = cv2.imencode('.jpg', frame)
@@ -37,4 +42,3 @@ def video_feed():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, threaded=True)
-
