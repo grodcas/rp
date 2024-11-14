@@ -21,6 +21,7 @@ def generate():
     while True:
         # Capture a frame from Picamera2
         frame = picam2.capture_array()
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
         if frame is not None:
             # Convert the frame to JPEG format for MJPEG streaming
