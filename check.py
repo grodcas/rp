@@ -13,7 +13,6 @@ picam2.configure(picam2.create_video_configuration())
 
 # Adjust the focus if the camera supports it
 # This will only work if your camera has adjustable focus.
-picam2.set_controls({"Focus": 0.5})  # Example: Adjust focus (value between 0 and 1, adjust as necessary)
 
 picam2.start()
 
