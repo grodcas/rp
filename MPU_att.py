@@ -18,6 +18,11 @@ GYRO_CONFIG = 0x1B
 PWR_MGMT_1 = 0x6B
 ACCEL_CONFIG = 0x1C
 
+GYRO_SCALE_MODIFIER = 16.4  # For ±2000°/s range
+
+GRAVITY = 9.80665
+ACCEL_SCALE_MODIFIER = 2048  # For ±16g range
+
 P, X, Q, R, av = None, None, None, None, None
 
 
@@ -111,13 +116,13 @@ def init_mpu():
 # Function to read MPU-6050 data
 def read_mpu():
     accel_data = bus.read_i2c_block_data(MPU6050_ADDR, 0x3B, 6)
-    ax = (accel_data[0] << 8) + accel_data[1]
-    ay = (accel_data[2] << 8) + accel_data[3]
-    az = (accel_data[4] << 8) + accel_data[5]
+    ax = ((accel_data[0] << 8) + accel_data[1])*GRAVITY/ACCEL_SCALE_MODIFIER
+    ay = ((accel_data[2] << 8) + accel_data[3])*GRAVITY/ACCEL_SCALE_MODIFIER
+    az = ((accel_data[4] << 8) + accel_data[5])*GRAVITY/ACCEL_SCALE_MODIFIER
 
-    gx = read_word_2c(GYRO_XOUT_H) - gyro_offsets[0]
-    gy = read_word_2c(GYRO_XOUT_H + 2) - gyro_offsets[1]
-    gz = read_word_2c(GYRO_XOUT_H + 4) - gyro_offsets[2]
+    gx = (read_word_2c(GYRO_XOUT_H) - gyro_offsets[0])/ GYRO_SCALE_MODIFIER
+    gy = (read_word_2c(GYRO_XOUT_H + 2) - gyro_offsets[1])/ GYRO_SCALE_MODIFIER
+    gz = (read_word_2c(GYRO_XOUT_H + 4) - gyro_offsets[2])/ GYRO_SCALE_MODIFIER
     return ax, ay, az, gx, gy, gz
 
 
