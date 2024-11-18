@@ -68,13 +68,13 @@ def estimator(Y, P, X, Q, R, av, start_time):
     # Update
     if not np.isnan(Y).any():  # Ensure Y doesn't contain NaN values
         Y = Y.T
-        H = [[-np.sin(X[1]) * av, 0], [np.cos(X[1]) * av, 0], [0, 1]]
-        C = [[np.cos(X[1]) * av, 0], [np.sin(X[1]) * av, 0], [0, 1]]
+        H = np.array([[-np.sin(X[1]) * av, 0], [np.cos(X[1]) * av, 0], [0, 1]])
+        C = np.array([[np.cos(X[1]) * av, 0], [np.sin(X[1]) * av, 0], [0, 1]])
         Yhat = C
-        S = np.dot(np.dot(H, P), H.T) + R
-        K = np.dot(np.dot(P, H.T), np.linalg.inv(S))
-        X = X + np.dot(K, (Y - Yhat))
-        P = np.dot(np.dot(F, P), F.T) + Q
+        S = np.array(np.dot(np.dot(H, P), H.T) + R)
+        K = np.array(np.dot(np.dot(P, H.T), np.linalg.inv(S)))
+        X = np.array(X + np.dot(K, (Y - Yhat)))
+        P = np.array(np.dot(np.dot(F, P), F.T) + Q)
 
     # Update Visualisation:
     theta = X[1]
