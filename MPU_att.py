@@ -70,7 +70,7 @@ def estimator(Y, P, X, Q, R, av, start_time):
         Y = Y.T
         H = np.array([[-np.sin(X[1]) * av, 0], [np.cos(X[1]) * av, 0], [0, 1]])
         C = np.array([[np.cos(X[1]) * av, 0], [np.sin(X[1]) * av, 0], [0, 1]])
-        Yhat = np.array([[np.cos(X[1]) * av], [np.sin(X[1]) * av],[ X(2)]])
+        Yhat = np.array([[np.cos(X[1]) * av], [np.sin(X[1]) * av],[X[2]]])
         S = np.array(np.dot(np.dot(H, P), H.T) + R)
         K = np.array(np.dot(np.dot(P, H.T), np.linalg.inv(S)))
         X = np.array(X + np.dot(K, (Y - Yhat)))
