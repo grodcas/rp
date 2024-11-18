@@ -67,7 +67,7 @@ def estimator(Y, P, X, Q, R, av, start_time):
 
     # Update
     if not np.isnan(Y).any():  # Ensure Y doesn't contain NaN values
-        Y = Y.T
+        #Y = Y
         H = np.array([[-np.sin(X[1]) * av, 0], [np.cos(X[1]) * av, 0], [0, 1]])
         C = np.array([[np.cos(X[1]) * av, 0], [np.sin(X[1]) * av, 0], [0, 1]])
         Yhat = np.array([[np.cos(X[0]) * av], [np.sin(X[0]) * av],[X[1]]])
@@ -136,7 +136,7 @@ Q, R, X, P, av = estimator_init()
 # Function to update the data
 def update_data(start_time, P, X, Q, R, av):
     ax, ay, az, gx, gy, gz = read_mpu()
-    Y = np.array([ax, az, gy])
+    Y = np.array([[ax], [az], [gy]])
     theta, thetap, P, X, Q, av, start_time = estimator(Y, P, X, Q, R, av, start_time)
 
     # Update the data buffers
