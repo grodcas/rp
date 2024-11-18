@@ -1,3 +1,31 @@
+from flask import Flask, render_template, Response
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+import smbus
+import time
+
+# Create Flask app
+app = Flask(__name__)
+
+# Set up I2C communication
+bus = smbus.SMBus(1)  # I2C bus 1 (default for most Raspberry Pi models)
+MPU6050_ADDR = 0x68  # MPU-6050 I2C address
+MPU_ADDR = 0x68
+GYRO_SCALE_MODIFIER = 131.0 
+GYRO_XOUT_H = 0x43
+GYRO_CONFIG = 0x1B
+PWR_MGMT_1 = 0x6B
+
+def read_word_2c(addr):
+    high = bus.read_byte_data(MPU_ADDR, addr)
+    low = bus.read_byte_data(MPU_ADDR, addr + 1)
+    val = (high << 8) + low
+    return val - 65536 if val >= 0x8000 else val
+
+def write_register(reg, value):
+    bus.write_byte_data(MPU_ADDR, reg, value)
+
 # Initializing P and other variables globally
 P, X, Q, R, av = None, None, None, None, None
 
@@ -173,6 +201,3 @@ def video_feed():
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, threaded=True)
 
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, threaded=True)
