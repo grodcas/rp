@@ -16,6 +16,7 @@ GYRO_SCALE_MODIFIER = 131.0
 GYRO_XOUT_H = 0x43
 GYRO_CONFIG = 0x1B
 PWR_MGMT_1 = 0x6B
+ACCEL_CONFIG = 0x1C
 
 P, X, Q, R, av = None, None, None, None, None
 
@@ -103,6 +104,7 @@ def init_mpu():
     # Wake up the MPU-6050 (it is in sleep mode when powered on)
     write_register(PWR_MGMT_1, 0)  # Wake up sensor
     write_register(GYRO_CONFIG, 0x18)  # Set full scale ±2000 °/s
+    write_register(ACCEL_CONFIG, 0x18)  # Set full scale ±2000 °/s
     time.sleep(0.1)
 
 
