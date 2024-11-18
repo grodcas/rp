@@ -28,56 +28,53 @@ def write_register(reg, value):
 
 
 def estimator_init():
-  
-    qa = 0.0001 #Bruit d'état orientation
-    ra = 1 #*ACCVAR(2:3); #Bruit de mesure accéléro
-    rg = 100 #Bruit de mesure gyro
-    Q = np.diag(np.array([qa, qa]));
-    R = np.diag(np.array([ra, ra, rg]));
-    X=np.array([0,0]).T; #Etat : rotation selon x (rad)
-    P = (10*np.pi/180)**2;
-
+    qa = 0.0001  # Bruit d'état orientation
+    ra = 1  # Bruit de mesure accéléro
+    rg = 100  # Bruit de mesure gyro
+    Q = np.diag(np.array([qa, qa]))
+    R = np.diag(np.array([ra, ra, rg]))
+    X = np.array([0, 0]).T  # État : rotation selon x (rad)
+    P = (10 * np.pi / 180) ** 2  # Variance initiale
     values = []
 
-# For loop to append values
-    for i in range(100):  # Example: append numbers 0 to 4
+    # For loop to append values
+    for i in range(100):
         ax, ay, az, gx, gy, gz = read_mpu()
-        values.append(np.sqrt(ax**2+az**2))  # Append the square of each number    
-      
-    av=np.mean(np.array(values))
+        values.append(np.sqrt(ax**2 + az**2))  # Append the square of each number
+    
+    av = np.mean(np.array(values))
 
-    return Q,R,X,P,av
+    return Q, R, X, P, av
 
 
-def estimator(Y, P, X, Q, R, av):
-
+def estimator(Y, P, X, Q, R, av, start_time):
     end_time = time.time()
-    dt = end_time-start_time
-    if dt<0:
-      dt = 1
+    dt = end_time - start_time
+    if dt < 0:
+        dt = 1
     start_time = time.time()
-  
+
     # Predict
-    F = np.array([[1,dt],[0,1]])
-    X = np.dot(F,X)
-    P = np.dot(np.dot(F,P),F.T) +Q
+    F = np.array([[1, dt], [0, 1]])
+    X = np.dot(F, X)
+    P = np.dot(np.dot(F, P), F.T) + Q
 
     # Update
-    if not np.isnan(Y):
-    #   Y = [d(6); d(7);  d(2)]
+    if not np.isnan(Y).any():  # Ensure Y doesn't contain NaN values
         Y = Y.T
-        H = [[ -np.sin(X[1])*av,0],[np.cos(X[1])*av,0], [0,1]]
-        C = [[ np.cos(X[1])*av,0], [np.sin(X[1])*av,0],[0,1]]
+        H = [[-np.sin(X[1]) * av, 0], [np.cos(X[1]) * av, 0], [0, 1]]
+        C = [[np.cos(X[1]) * av, 0], [np.sin(X[1]) * av, 0], [0, 1]]
         Yhat = C
-        S = np.dot(np.dot(H,P),H.T)+ R;
-        K = np.dot(np.dot(P,H.T),np.linalg.inv(S));
-        X = X + np.dot(K,(Y-Yhat));
-        P = np.dot(np.dot(F,P),F.T) +Q;
+        S = np.dot(np.dot(H, P), H.T) + R
+        K = np.dot(np.dot(P, H.T), np.linalg.inv(S))
+        X = X + np.dot(K, (Y - Yhat))
+        P = np.dot(np.dot(F, P), F.T) + Q
 
     # Update Visualisation:
     theta = X[1]
     thetap = X[2]
-    return theta, thetap, P, X, Q, av
+    return theta, thetap, P, X, Q, av, start_time
+
 
 # Calibration
 def calibrate_gyroscope(samples=100):
@@ -95,29 +92,23 @@ gyro_offsets = calibrate_gyroscope()
 # Initialize the MPU-6050
 def init_mpu():
     # Wake up the MPU-6050 (it is in sleep mode when powered on)
-    # Initialize MPU6000
     write_register(PWR_MGMT_1, 0)  # Wake up sensor
     write_register(GYRO_CONFIG, 0x18)  # Set full scale ±2000 °/s
     time.sleep(0.1)
 
+
 # Function to read MPU-6050 data
 def read_mpu():
-    # Read Accelerometer data (6 bytes)
     accel_data = bus.read_i2c_block_data(MPU6050_ADDR, 0x3B, 6)
     ax = (accel_data[0] << 8) + accel_data[1]
     ay = (accel_data[2] << 8) + accel_data[3]
     az = (accel_data[4] << 8) + accel_data[5]
 
-    # Read Gyroscope data (6 bytes)
-    # gyro_data = bus.read_i2c_block_data(MPU6050_ADDR, 0x43, 6)
-    # gx = (gyro_data[0] << 8) + gyro_data[1]
-    # gy = (gyro_data[2] << 8) + gyro_data[3]
-    # gz = (gyro_data[4] << 8) + gyro_data[5]
-    
     gx = read_word_2c(GYRO_XOUT_H) - gyro_offsets[0]
     gy = read_word_2c(GYRO_XOUT_H + 2) - gyro_offsets[1]
     gz = read_word_2c(GYRO_XOUT_H + 4) - gyro_offsets[2]
     return ax, ay, az, gx, gy, gz
+
 
 # Initialize MPU
 init_mpu()
@@ -131,13 +122,15 @@ gyro_data_x = np.zeros(data_len)
 gyro_data_y = np.zeros(data_len)
 gyro_data_z = np.zeros(data_len)
 
-Q,R,X,P,av = estimator_init()
+# Initialize estimator parameters
+Q, R, X, P, av = estimator_init()
+
 # Function to update the data
-def update_data():
+def update_data(start_time):
     ax, ay, az, gx, gy, gz = read_mpu()
-    Y = np.array([ax,az,gy])
-    theta, thetap, P, X, Q, av = estimator(Y, P, X, Q, R, av)
-  
+    Y = np.array([ax, az, gy])
+    theta, thetap, P, X, Q, av, start_time = estimator(Y, P, X, Q, R, av, start_time)
+
     # Update the data buffers
     accel_data_x[:-1] = accel_data_x[1:]
     accel_data_y[:-1] = accel_data_y[1:]
@@ -153,15 +146,20 @@ def update_data():
     gyro_data_y[-1] = gz
     gyro_data_z[-1] = gz
 
+    return start_time
+
+
 # Set up Flask route
 @app.route('/')
 def index():
     return render_template('index.html')
 
+
 # Function to generate the plots
 def generate_plots():
+    start_time = time.time()
     while True:
-        update_data()
+        start_time = update_data(start_time)
 
         # Create a figure for the plots
         fig, axs = plt.subplots(2, 3, figsize=(15, 10))
@@ -200,6 +198,7 @@ def generate_plots():
 @app.route('/video_feed')
 def video_feed():
     return Response(generate_plots(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, threaded=True)
