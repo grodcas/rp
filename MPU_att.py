@@ -19,7 +19,6 @@ PWR_MGMT_1 = 0x6B
 
 P, X, Q, R, av = None, None, None, None, None
 
-Q, R, X, P, av = estimator_init()
 
 start_time =time.time()
 
@@ -128,6 +127,8 @@ accel_data_z = np.zeros(data_len)
 gyro_data_x = np.zeros(data_len)
 gyro_data_y = np.zeros(data_len)
 gyro_data_z = np.zeros(data_len)
+
+Q, R, X, P, av = estimator_init()
 
 # Function to update the data
 def update_data(start_time, P, X, Q, R, av):
