@@ -70,15 +70,15 @@ def estimator(Y, P, X, Q, R, av, start_time):
         Y = Y.T
         H = np.array([[-np.sin(X[1]) * av, 0], [np.cos(X[1]) * av, 0], [0, 1]])
         C = np.array([[np.cos(X[1]) * av, 0], [np.sin(X[1]) * av, 0], [0, 1]])
-        Yhat = np.array([[np.cos(X[1]) * av], [np.sin(X[1]) * av],[X[2]]])
+        Yhat = np.array([[np.cos(X[0]) * av], [np.sin(X[0]) * av],[X[1]]])
         S = np.array(np.dot(np.dot(H, P), H.T) + R)
         K = np.array(np.dot(np.dot(P, H.T), np.linalg.inv(S)))
         X = np.array(X + np.dot(K, (Y - Yhat)))
         P = np.array(np.dot(np.dot(F, P), F.T) + Q)
 
     # Update Visualisation:
-    theta = X[1]
-    thetap = X[2]
+    theta = -X[0]
+    thetap = X[1]
     return theta, thetap, P, X, Q, av, start_time
 
 
