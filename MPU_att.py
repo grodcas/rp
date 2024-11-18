@@ -17,6 +17,12 @@ GYRO_XOUT_H = 0x43
 GYRO_CONFIG = 0x1B
 PWR_MGMT_1 = 0x6B
 
+P, X, Q, R, av = None, None, None, None, None
+
+Q, R, X, P, av = estimator_init()
+
+start_time =time.time()
+
 def read_word_2c(addr):
     high = bus.read_byte_data(MPU_ADDR, addr)
     low = bus.read_byte_data(MPU_ADDR, addr + 1)
@@ -26,8 +32,7 @@ def read_word_2c(addr):
 def write_register(reg, value):
     bus.write_byte_data(MPU_ADDR, reg, value)
 
-# Initializing P and other variables globally
-P, X, Q, R, av = None, None, None, None, None
+
 
 def estimator_init():
     qa = 0.0001  # Bruit d'état orientation
@@ -48,8 +53,6 @@ def estimator_init():
 
     return Q, R, X, P, av
 
-# Assuming P, X, Q, R, and av are initialized from estimator_init()
-Q, R, X, P, av = estimator_init()
 
 def estimator(Y, P, X, Q, R, av, start_time):
     end_time = time.time()
@@ -92,12 +95,14 @@ def calibrate_gyroscope(samples=100):
 
 gyro_offsets = calibrate_gyroscope()
 
+
 # Initialize the MPU-6050
 def init_mpu():
     # Wake up the MPU-6050 (it is in sleep mode when powered on)
     write_register(PWR_MGMT_1, 0)  # Wake up sensor
     write_register(GYRO_CONFIG, 0x18)  # Set full scale ±2000 °/s
     time.sleep(0.1)
+
 
 # Function to read MPU-6050 data
 def read_mpu():
@@ -110,6 +115,7 @@ def read_mpu():
     gy = read_word_2c(GYRO_XOUT_H + 2) - gyro_offsets[1]
     gz = read_word_2c(GYRO_XOUT_H + 4) - gyro_offsets[2]
     return ax, ay, az, gx, gy, gz
+
 
 # Initialize MPU
 init_mpu()
@@ -124,7 +130,7 @@ gyro_data_y = np.zeros(data_len)
 gyro_data_z = np.zeros(data_len)
 
 # Function to update the data
-def update_data(start_time):
+def update_data(start_time, P, X, Q, R, av):
     ax, ay, az, gx, gy, gz = read_mpu()
     Y = np.array([ax, az, gy])
     theta, thetap, P, X, Q, av, start_time = estimator(Y, P, X, Q, R, av, start_time)
@@ -200,4 +206,3 @@ def video_feed():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, threaded=True)
-
