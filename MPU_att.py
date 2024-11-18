@@ -124,7 +124,7 @@ gyro_data_z = np.zeros(data_len)
 
 # Initialize estimator parameters
 Q, R, X, P, av = estimator_init()
-
+start_time = time.time()
 # Function to update the data
 def update_data(start_time):
     ax, ay, az, gx, gy, gz = read_mpu()
