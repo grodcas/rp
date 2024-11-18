@@ -149,7 +149,7 @@ def update_data(start_time, P, X, Q, R, av):
 
     accel_data_x[-1] = ax
     accel_data_y[-1] = az
-    accel_data_z[-1] = theta
+    accel_data_z[-1] = theta[0]
     gyro_data_x[-1] = gy
     gyro_data_y[-1] = gz
     gyro_data_z[-1] = gz
