@@ -164,7 +164,7 @@ def index():
 def generate_plots():
     start_time = time.time()
     while True:
-        start_time = update_data(start_time)
+        start_time = update_data(start_time, P, X, Q, R, av)
 
         # Create a figure for the plots
         fig, axs = plt.subplots(2, 3, figsize=(15, 10))
