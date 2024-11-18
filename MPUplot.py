@@ -29,9 +29,9 @@ def read_mpu():
 
     # Read Gyroscope data (6 bytes)
     gyro_data = bus.read_i2c_block_data(MPU6050_ADDR, 0x43, 6)
-    gx = (gyro_data[0] ) + gyro_data[1]
-    gy = (gyro_data[2] ) + gyro_data[3]
-    gz = (gyro_data[4] ) + gyro_data[5]
+    gx = (gyro_data[0] << 8) + gyro_data[1]
+    gy = (gyro_data[2] << 8) + gyro_data[3]
+    gz = (gyro_data[4] << 8) + gyro_data[5]
     
     gx /= GYRO_SCALE_MODIFIER
     gy /= GYRO_SCALE_MODIFIER
