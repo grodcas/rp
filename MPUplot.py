@@ -12,11 +12,40 @@ app = Flask(__name__)
 bus = smbus.SMBus(1)  # I2C bus 1 (default for most Raspberry Pi models)
 MPU6050_ADDR = 0x68  # MPU-6050 I2C address
 GYRO_SCALE_MODIFIER = 131.0 
+GYRO_XOUT_H = 0x43
+GYRO_CONFIG = 0x1B
+PWR_MGMT_1 = 0x6B
+
+def read_word_2c(addr):
+    high = bus.read_byte_data(MPU_ADDR, addr)
+    low = bus.read_byte_data(MPU_ADDR, addr + 1)
+    val = (high << 8) + low
+    return val - 65536 if val >= 0x8000 else val
+
+def write_register(reg, value):
+    bus.write_byte_data(MPU_ADDR, reg, value)
+
+
+
+# Calibration
+def calibrate_gyroscope(samples=100):
+    offsets = [0, 0, 0]
+    for i in range(samples):
+        offsets[0] += read_word_2c(GYRO_XOUT_H)
+        offsets[1] += read_word_2c(GYRO_XOUT_H + 2)
+        offsets[2] += read_word_2c(GYRO_XOUT_H + 4)
+        time.sleep(0.01)
+    return [offset / samples for offset in offsets]
+
+gyro_offsets = calibrate_gyroscope()
+
 
 # Initialize the MPU-6050
 def init_mpu():
     # Wake up the MPU-6050 (it is in sleep mode when powered on)
-    bus.write_byte_data(MPU6050_ADDR, 0x6B, 0)
+    # Initialize MPU6000
+    write_register(PWR_MGMT_1, 0)  # Wake up sensor
+    write_register(GYRO_CONFIG, 0x18)  # Set full scale ±2000 °/s
     time.sleep(0.1)
 
 # Function to read MPU-6050 data
@@ -28,15 +57,14 @@ def read_mpu():
     az = (accel_data[4] << 8) + accel_data[5]
 
     # Read Gyroscope data (6 bytes)
-    gyro_data = bus.read_i2c_block_data(MPU6050_ADDR, 0x43, 6)
-    gx = (gyro_data[0] << 8) + gyro_data[1]
-    gy = (gyro_data[2] << 8) + gyro_data[3]
-    gz = (gyro_data[4] << 8) + gyro_data[5]
+    # gyro_data = bus.read_i2c_block_data(MPU6050_ADDR, 0x43, 6)
+    # gx = (gyro_data[0] << 8) + gyro_data[1]
+    # gy = (gyro_data[2] << 8) + gyro_data[3]
+    # gz = (gyro_data[4] << 8) + gyro_data[5]
     
-    gx /= GYRO_SCALE_MODIFIER
-    gy /= GYRO_SCALE_MODIFIER
-    gz /= GYRO_SCALE_MODIFIER
-    
+    gx = read_word_2c(GYRO_XOUT_H) - gyro_offsets[0]
+    gy = read_word_2c(GYRO_XOUT_H + 2) - gyro_offsets[1]
+    gz = read_word_2c(GYRO_XOUT_H + 4) - gyro_offsets[2]
     return ax, ay, az, gx, gy, gz
 
 # Initialize MPU
