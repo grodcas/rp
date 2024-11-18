@@ -52,7 +52,7 @@ def estimator_init():
     # For loop to append values
     for i in range(100):
         ax, ay, az, gx, gy, gz = read_mpu()
-        values.append(np.sqrt(ax**2 + az**2))  # Append the square of each number
+        values.append(np.sqrt(ay**2 + az**2))  # Append the square of each number
     
     av = np.mean(np.array(values))
 
@@ -143,7 +143,7 @@ Q, R, X, P, av = estimator_init()
 # Function to update the data
 def update_data(start_time, P, X, Q, R, av):
     ax, ay, az, gx, gy, gz = read_mpu()
-    Y = np.array([[ax], [az], [gy]])
+    Y = np.array([[ay], [az], [gx]])
     theta, thetap, P, X, Q, av, start_time = estimator(Y, P, X, Q, R, av, start_time)
 
     # Update the data buffers
@@ -154,10 +154,10 @@ def update_data(start_time, P, X, Q, R, av):
     gyro_data_y[:-1] = gyro_data_y[1:]
     gyro_data_z[:-1] = gyro_data_z[1:]
 
-    accel_data_x[-1] = ax
+    accel_data_x[-1] = ay
     accel_data_y[-1] = az
-    accel_data_z[-1] = theta[0]
-    gyro_data_x[-1] = gy
+    accel_data_z[-1] = theta[0]*360/np.pi
+    gyro_data_x[-1] = gx
     gyro_data_y[-1] = gz
     gyro_data_z[-1] = gz
 
