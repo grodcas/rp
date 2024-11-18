@@ -11,6 +11,7 @@ app = Flask(__name__)
 # Set up I2C communication
 bus = smbus.SMBus(1)  # I2C bus 1 (default for most Raspberry Pi models)
 MPU6050_ADDR = 0x68  # MPU-6050 I2C address
+MPU_ADDR = 0x68
 GYRO_SCALE_MODIFIER = 131.0 
 GYRO_XOUT_H = 0x43
 GYRO_CONFIG = 0x1B
