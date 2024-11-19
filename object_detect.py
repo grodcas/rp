@@ -4,11 +4,22 @@ from ultralytics import YOLO
 
 app = Flask(__name__)
 
+# Initialize Picamera2
+picam2 = Picamera2()
+
+# Configure the camera for video capture
+picam2.configure(picam2.create_video_configuration())
+#picam2.set_controls({"AwbMode": "auto"})  # This enables automatic white balance
+
+# Adjust the focus if the camera supports it
+# This will only work if your camera has adjustable focus.
+
+picam2.start()
 # Load YOLOv8 model
 model = YOLO('yolov8n.pt')  # Use 'yolov8s.pt' or others for better accuracy if resources allow
 
 # Initialize the video capture
-cap = cv2.VideoCapture(0)  # Use 0 for webcam, or provide a video file path
+#cap = cv2.VideoCapture(0)  # Use 0 for webcam, or provide a video file path
 
 def generate_frames():
     """Generate frames from the webcam with YOLOv8 detection."""
