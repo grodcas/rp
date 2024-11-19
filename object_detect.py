@@ -26,10 +26,10 @@ def generate_frames():
     """Generate frames from the webcam with YOLOv8 detection."""
     while True:
         frame = picam2.capture_array()
-        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
         # Perform YOLO detection
-        results = model(frame_rgb)
+        results = model(frame)
         annotated_frame = results[0].plot()  # Annotate the frame with detection results
 
         # Encode the frame in JPEG format
