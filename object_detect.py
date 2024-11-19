@@ -24,9 +24,8 @@ model = YOLO('yolov8n.pt')  # Use 'yolov8s.pt' or others for better accuracy if 
 def generate_frames():
     """Generate frames from the webcam with YOLOv8 detection."""
     while True:
-        success, frame = cap.read()
-        if not success:
-            break
+        frame = picam2.capture_array()
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
         # Perform YOLO detection
         results = model(frame)
