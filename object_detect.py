@@ -1,34 +1,43 @@
+from flask import Flask, Response, render_template
 import cv2
 from ultralytics import YOLO
 
-# Load a YOLOv8 model pre-trained on the COCO dataset
-model = YOLO('yolov8n.pt')  # 'yolov8n.pt' is the nano version for fast inference
+app = Flask(__name__)
 
-# Open webcam feed or use a video file
-cap = cv2.VideoCapture(0)  # Replace 0 with a file path for video input
+# Load YOLOv8 model
+model = YOLO('yolov8n.pt')  # Use 'yolov8s.pt' or others for better accuracy if resources allow
 
-if not cap.isOpened():
-    print("Error: Unable to access the camera.")
-    exit()
+# Initialize the video capture
+cap = cv2.VideoCapture(0)  # Use 0 for webcam, or provide a video file path
 
-while True:
-    ret, frame = cap.read()
-    if not ret:
-        print("Failed to grab frame.")
-        break
+def generate_frames():
+    """Generate frames from the webcam with YOLOv8 detection."""
+    while True:
+        success, frame = cap.read()
+        if not success:
+            break
 
-    # Run YOLO detection on the frame
-    results = model(frame)
+        # Perform YOLO detection
+        results = model(frame)
+        annotated_frame = results[0].plot()  # Annotate the frame with detection results
 
-    # Visualize results
-    annotated_frame = results[0].plot()  # Annotate frame with detection results
+        # Encode the frame in JPEG format
+        _, buffer = cv2.imencode('.jpg', annotated_frame)
+        frame_bytes = buffer.tobytes()
 
-    # Show the annotated frame
-    cv2.imshow('YOLOv8 Object Detection', annotated_frame)
+        # Yield the frame in a streaming format for Flask
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
 
-    # Break the loop if 'q' is pressed
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+@app.route('/')
+def index():
+    """Render the main webpage."""
+    return render_template('index.html')
 
-cap.release()
-cv2.destroyAllWindows()
+@app.route('/video_feed')
+def video_feed():
+    """Return the video feed."""
+    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
