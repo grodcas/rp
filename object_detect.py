@@ -29,7 +29,7 @@ def generate_frames():
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
         # Perform YOLO detection
-        results = model(frame)
+        results = model(frame_rgb)
         annotated_frame = results[0].plot()  # Annotate the frame with detection results
 
         # Encode the frame in JPEG format
