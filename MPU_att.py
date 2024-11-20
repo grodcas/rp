@@ -46,7 +46,7 @@ def estimator_init():
     Q = np.diag(np.array([qa, qa]))
     R = np.diag(np.array([ra, ra, rg]))
     X = np.array([0, 0]).T  # État : rotation selon x (rad)
-    P = (10 * np.pi / 180) ** 2  # Variance initiale
+    P = (0 * np.pi / 180) ** 2  # Variance initiale
     values = []
 
     # For loop to append values
